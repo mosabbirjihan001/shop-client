@@ -1,41 +1,12 @@
-// import { useEffect, useState } from "react";
-// import ProductCard from "../components/ProductCard";
-// import ProductForm from "../components/ProductForm";
 
-
-// function Home() {
-//   const [products, setProducts] = useState([]);
-
-//   const fetchProducts = () => {
-//     fetch("http://localhost:5000/api/products")
-//       .then(res => res.json())
-//       .then(data => setProducts(data));
-//   };
-
-//   useEffect(() => {
-//     fetchProducts();
-//   }, []);
-
-//   return (
-//     <div className="p-10">
-//       <ProductForm refresh={fetchProducts} />
-
-//       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-//         {products.map((p, i) => (
-//           <ProductCard key={i} product={p} />
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default Home;
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ProductCard from "../components/ProductCard";
 
-const API = "http://localhost:5000/api/products";
+const API = process.env.REACT_APP_API_URL 
+  ? `${process.env.REACT_APP_API_URL}/api` 
+  : "http://localhost:5000/api";
 
 export default function Home() {
   const { user } = useAuth();

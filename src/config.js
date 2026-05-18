@@ -1,6 +1,9 @@
+// Hardcode your Vercel URL as the production fallback
 export const API_BASE_URL =
   process.env.REACT_APP_API_URL ||
-  (process.env.NODE_ENV === "production" ? "" : "http://localhost:5000");
+  (process.env.NODE_ENV === "production" 
+    ? "https://shop-server-6rxo.vercel.app" 
+    : "http://localhost:5000");
 
 export const SUPABASE_URL =
   process.env.REACT_APP_SUPABASE_URL ||
