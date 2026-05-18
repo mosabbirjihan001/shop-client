@@ -12,8 +12,6 @@
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.2",
     "react-scripts": "5.0.1",
-    "render": "^0.1.4",
-    "server": "file:../server",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
