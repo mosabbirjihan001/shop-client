@@ -7,6 +7,7 @@ export const PAYMENT_METHODS = [
     status: "pending_collection",
     note: "Pay the delivery agent after checking the package.",
     requiresReference: false,
+    secureNote: "No online payment data is collected for COD.",
   },
   {
     id: "card_gateway",
@@ -16,6 +17,7 @@ export const PAYMENT_METHODS = [
     status: "pending_gateway",
     note: "Use a secure hosted card gateway. Card numbers are never saved in this app.",
     requiresReference: false,
+    secureNote: "Card details must be entered only on your payment gateway, never in this store form.",
   },
   {
     id: "bkash",
@@ -25,6 +27,7 @@ export const PAYMENT_METHODS = [
     status: "pending_verification",
     note: "Send payment to merchant wallet 01XXXXXXXXX, then enter the transaction ID.",
     requiresReference: true,
+    secureNote: "Only the transaction ID is saved for admin verification.",
   },
   {
     id: "nagad",
@@ -34,6 +37,7 @@ export const PAYMENT_METHODS = [
     status: "pending_verification",
     note: "Send payment to merchant wallet 01XXXXXXXXX, then enter the transaction ID.",
     requiresReference: true,
+    secureNote: "Only the transaction ID is saved for admin verification.",
   },
   {
     id: "rocket",
@@ -43,6 +47,7 @@ export const PAYMENT_METHODS = [
     status: "pending_verification",
     note: "Send payment to merchant wallet 01XXXXXXXXX, then enter the transaction ID.",
     requiresReference: true,
+    secureNote: "Only the transaction ID is saved for admin verification.",
   },
   {
     id: "bank_transfer",
@@ -52,6 +57,7 @@ export const PAYMENT_METHODS = [
     status: "pending_verification",
     note: "Transfer to the shop account and enter the bank reference number.",
     requiresReference: true,
+    secureNote: "Bank references are reviewed by admin before fulfillment.",
   },
   {
     id: "emi",
@@ -61,6 +67,7 @@ export const PAYMENT_METHODS = [
     status: "pending_gateway",
     note: "Choose EMI on the secure card gateway when the order is confirmed.",
     requiresReference: false,
+    secureNote: "Installment approval happens outside this app through your payment provider.",
   },
 ];
 

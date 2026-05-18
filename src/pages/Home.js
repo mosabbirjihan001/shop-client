@@ -130,24 +130,24 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-base-200">
-      <section className="border-b border-base-300 bg-neutral text-neutral-content">
-        <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[1fr_360px] lg:items-center">
+    <div className="bg-[#e3e6e6]">
+      <section className="border-b border-[#232f3e] bg-[#232f3e] text-white">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[1fr_360px] lg:items-center">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wide text-warning">{pageSettings.hero_label}</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-[#ff9900]">{pageSettings.hero_label}</p>
             <h1 className="mt-2 text-3xl font-bold leading-tight md:text-5xl">
               {pageSettings.hero_title}
             </h1>
-            <p className="mt-3 max-w-2xl text-neutral-content/75">
+            <p className="mt-3 max-w-2xl text-white/75">
               {pageSettings.hero_subtitle}
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <a href="#products" className="btn btn-warning btn-sm">{pageSettings.deal_button}</a>
-              {isAdmin && <Link to="/admin" className="btn btn-outline btn-sm border-neutral-content text-neutral-content">Manage catalog</Link>}
+              {isAdmin && <Link to="/admin" className="btn btn-outline btn-sm border-white text-white hover:bg-white hover:text-[#232f3e]">Manage catalog</Link>}
             </div>
           </div>
 
-          <div className="rounded-md bg-base-100 p-4 text-base-content shadow-lg">
+          <div className="rounded-sm bg-white p-4 text-base-content shadow-lg">
             <div className="text-sm font-semibold text-base-content/60">Today&apos;s featured item</div>
             {featured ? (
               <div className="mt-3 flex gap-4">
@@ -165,8 +165,8 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-4 py-6">
-        <div className="mb-4 grid gap-3 rounded-md border border-base-300 bg-base-100 p-4 shadow-sm lg:grid-cols-[1fr_180px_180px]">
+      <div className="mx-auto max-w-7xl px-4 py-6">
+        <div className="mb-4 grid gap-3 rounded-sm border border-base-300 bg-white p-4 shadow-sm lg:grid-cols-[1fr_180px_180px]">
           <label className="input input-bordered flex items-center gap-2 bg-base-100">
             <span className="text-sm font-semibold text-base-content/50">Search</span>
             <input
@@ -187,13 +187,13 @@ export default function Home() {
 
         <div className="grid gap-5 lg:grid-cols-[240px_1fr]">
           <aside className="space-y-4">
-            <section className="rounded-md border border-base-300 bg-base-100 p-4 shadow-sm">
+            <section className="rounded-sm border border-base-300 bg-white p-4 shadow-sm">
               <h2 className="font-bold">Departments</h2>
               <div className="mt-3 space-y-1">
                 {categories.map((item) => (
                   <button
                     key={item}
-                    className={`btn btn-sm w-full justify-start ${category === item ? "btn-primary" : "btn-ghost"}`}
+                    className={`btn btn-sm w-full justify-start ${category === item ? "border-[#232f3e] bg-[#232f3e] text-white hover:bg-[#131921]" : "btn-ghost"}`}
                     onClick={() => setCategory(item)}
                     type="button"
                   >
@@ -203,7 +203,7 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="rounded-md border border-base-300 bg-base-100 p-4 shadow-sm">
+            <section className="rounded-sm border border-base-300 bg-white p-4 shadow-sm">
               <h2 className="font-bold">Price</h2>
               <label className="form-control mt-3">
                 <span className="label-text mb-2">Max price</span>
@@ -222,7 +222,7 @@ export default function Home() {
               </div>
             </section>
 
-            <section className="rounded-md border border-base-300 bg-base-100 p-4 shadow-sm">
+            <section className="rounded-sm border border-base-300 bg-white p-4 shadow-sm">
               <h2 className="font-bold">Cart</h2>
               <p className="mt-2 text-sm text-base-content/60">{count} item{count === 1 ? "" : "s"} currently saved.</p>
               <Link to="/cart" className="btn btn-warning btn-sm mt-3 w-full">View cart</Link>
@@ -254,14 +254,16 @@ export default function Home() {
             {!loading && !error && filteredProducts.length > 0 && (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredProducts.map((product) => (
-                  <article key={product.id} className="flex min-h-full flex-col overflow-hidden rounded-md border border-base-300 bg-base-100 shadow-sm transition hover:shadow-md">
+                  <article key={product.id} className="flex min-h-full flex-col overflow-hidden rounded-sm border border-base-300 bg-white shadow-sm transition hover:shadow-md">
                     <Link to={`/product/${product.id}`} aria-label={`View ${product.name}`}>
                       <ProductImage product={product} />
                     </Link>
                     <div className="flex flex-1 flex-col p-4">
                       <div className="mb-2 flex items-center justify-between gap-2">
                         <span className="badge badge-ghost badge-sm">{product.category || "General"}</span>
-                        <span className="text-xs font-semibold text-success">In stock</span>
+                        <span className={`text-xs font-semibold ${product.stock_quantity == null || Number(product.stock_quantity || 0) > 0 ? "text-success" : "text-error"}`}>
+                          {product.stock_quantity == null ? "In stock" : Number(product.stock_quantity || 0) > 0 ? `${product.stock_quantity} in stock` : "Out of stock"}
+                        </span>
                       </div>
                       <Link to={`/product/${product.id}`} className="line-clamp-2 min-h-12 font-bold hover:text-primary">
                         {product.name}
@@ -271,16 +273,16 @@ export default function Home() {
                       </p>
                       <div className="mt-3 flex items-baseline gap-1">
                         <span className="text-xs">$</span>
-                        <span className="text-2xl font-bold text-error">{Number(product.price || 0).toFixed(2)}</span>
+                        <span className="text-2xl font-bold text-[#b12704]">{Number(product.price || 0).toFixed(2)}</span>
                       </div>
                       <p className="mt-1 text-xs text-base-content/50">Free delivery on eligible orders</p>
                       <div className="mt-4 grid gap-2">
                         {user && !isAdmin ? (
                           <div className="grid grid-cols-2 gap-2">
-                            <button className="btn btn-warning btn-sm" onClick={() => addToCart(product)}>
+                            <button className="btn btn-warning btn-sm" onClick={() => addToCart(product)} disabled={product.stock_quantity != null && Number(product.stock_quantity || 0) < 1}>
                               Add cart
                             </button>
-                            <button className="btn btn-primary btn-sm" onClick={() => buyNow(product)}>
+                            <button className="btn bg-[#ffa41c] border-[#ffa41c] text-[#111827] hover:bg-[#f08804] btn-sm" onClick={() => buyNow(product)} disabled={product.stock_quantity != null && Number(product.stock_quantity || 0) < 1}>
                               Buy now
                             </button>
                           </div>
@@ -304,12 +306,13 @@ export default function Home() {
 }
 
 function ProductImage({ product, compact = false }) {
+  const [failed, setFailed] = useState(false);
   const sizeClass = compact ? "h-24 w-24" : "h-48 w-full";
 
   return (
     <div className={`${sizeClass} shrink-0 overflow-hidden bg-base-200`}>
-      {product.image_url ? (
-        <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
+      {product.image_url && !failed ? (
+        <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" onError={() => setFailed(true)} />
       ) : (
         <div className="grid h-full w-full place-items-center text-center text-sm font-semibold text-base-content/35">
           No image

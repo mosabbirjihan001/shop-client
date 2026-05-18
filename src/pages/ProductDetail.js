@@ -13,6 +13,7 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [related, setRelated] = useState([]);
   const [quantity, setQuantity] = useState(1);
+  const [imageFailed, setImageFailed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -101,8 +102,8 @@ export default function ProductDetail() {
 
       <section className="grid gap-6 rounded-md border border-base-300 bg-base-100 p-5 shadow-sm lg:grid-cols-[420px_1fr_280px]">
         <div className="overflow-hidden rounded-md bg-base-200">
-          {product.image_url ? (
-            <img src={product.image_url} alt={product.name} className="h-full min-h-96 w-full object-cover" />
+          {product.image_url && !imageFailed ? (
+            <img src={product.image_url} alt={product.name} className="h-full min-h-96 w-full object-cover" onError={() => setImageFailed(true)} />
           ) : (
             <div className="grid min-h-96 place-items-center text-base-content/40">No image</div>
           )}
@@ -129,23 +130,26 @@ export default function ProductDetail() {
 
         <aside className="rounded-md border border-base-300 bg-base-200 p-4">
           <p className="text-2xl font-bold text-error">${Number(product.price || 0).toFixed(2)}</p>
-          <p className="mt-1 text-sm text-success">In stock</p>
+          <p className={`mt-1 text-sm ${product.stock_quantity == null || Number(product.stock_quantity || 0) > 0 ? "text-success" : "text-error"}`}>
+            {product.stock_quantity == null ? "In stock" : Number(product.stock_quantity || 0) > 0 ? `${product.stock_quantity} in stock` : "Out of stock"}
+          </p>
           <label className="form-control mt-4">
             <span className="label-text mb-2">Quantity</span>
             <input
               className="input input-bordered"
               min="1"
+              max={product.stock_quantity == null ? undefined : Math.max(1, Number(product.stock_quantity || 1))}
               type="number"
               value={quantity}
-              onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))}
+              onChange={(event) => setQuantity(product.stock_quantity == null ? Math.max(1, Number(event.target.value)) : Math.min(Math.max(1, Number(event.target.value)), Math.max(1, Number(product.stock_quantity || 1))))}
             />
           </label>
           {isAdmin ? (
             <Link to="/admin" className="btn btn-primary mt-4 w-full">Update in admin</Link>
           ) : (
             <div className="mt-4 grid gap-2">
-              <button className="btn btn-warning" onClick={add}>Add to cart</button>
-              <button className="btn btn-primary" onClick={buyNow}>Buy now</button>
+              <button className="btn btn-warning" onClick={add} disabled={product.stock_quantity != null && Number(product.stock_quantity || 0) < 1}>Add to cart</button>
+              <button className="btn btn-primary" onClick={buyNow} disabled={product.stock_quantity != null && Number(product.stock_quantity || 0) < 1}>Buy now</button>
             </div>
           )}
         </aside>

@@ -2,10 +2,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
+import { addOrder } from "../utils/orderStore";
 import { getPaymentMethod, PAYMENT_METHODS, normalizePaymentMethod } from "../utils/paymentMethods";
 
 const COUPON_KEY = "shopapp_coupons";
-const SALES_KEY = "shopapp_sales";
 const PROFILE_KEY = "shopapp_profile";
 
 const DELIVERY_OPTIONS = [
@@ -22,10 +22,6 @@ function readStorage(key, fallback) {
   }
 }
 
-function writeStorage(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
 export default function CartPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -36,6 +32,7 @@ export default function CartPage() {
   const savedProfile = user ? readStorage(PROFILE_KEY, {})[user.email] || {} : {};
   const [paymentMethodId, setPaymentMethodId] = useState(normalizePaymentMethod(savedProfile.payment_method));
   const [paymentReference, setPaymentReference] = useState("");
+  const [paymentAcknowledged, setPaymentAcknowledged] = useState(false);
   const [deliveryOptionId, setDeliveryOptionId] = useState("standard");
   const [checkoutMessage, setCheckoutMessage] = useState("");
   const [customer, setCustomer] = useState({
@@ -72,7 +69,7 @@ export default function CartPage() {
     setCouponMessage(`Coupon ${coupon.code} applied.`);
   };
 
-  const checkout = () => {
+  const checkout = async () => {
     if (!user) {
       navigate("/login");
       return;
@@ -94,8 +91,13 @@ export default function CartPage() {
       return;
     }
 
-    const sales = readStorage(SALES_KEY, []);
+    if (selectedPayment.type !== "offline" && !paymentAcknowledged) {
+      setCheckoutMessage("Please confirm that payment details were completed only through the official provider.");
+      return;
+    }
+
     const orderId = `TM-${Date.now()}`;
+    const paymentReceived = selectedPayment.status === "paid" || Boolean(paymentReference.trim());
     const order = {
       id: orderId,
       date: new Date().toISOString(),
@@ -111,17 +113,23 @@ export default function CartPage() {
       paymentMethod: selectedPayment.label,
       paymentProvider: selectedPayment.id,
       paymentReference: paymentReference.trim(),
-      paymentStatus: selectedPayment.status,
+      paymentStatus: paymentReceived ? "paid" : selectedPayment.status,
+      paymentReceived,
+      paymentRisk: selectedPayment.requiresReference && paymentReference.trim().length < 8 ? "review" : "normal",
       deliveryMethod: selectedDelivery.label,
       deliveryEta: selectedDelivery.eta,
       deliveryAddress: deliveryOptionId === "pickup" ? "Store pickup" : customer.address,
+      delivered: false,
+      approvalStatus: "pending",
+      orderStatus: "pending",
     };
-    writeStorage(SALES_KEY, [...sales, order]);
-    alert(`Order ${orderId} placed. Payment status: ${selectedPayment.status.replaceAll("_", " ")}.`);
+    const result = await addOrder(order);
+    alert(`Order ${result.order.id} placed. Payment status: ${result.order.paymentStatus.replaceAll("_", " ")}.${result.source === "local" ? " Saved locally because the server order table is not available." : ""}`);
     clearCart();
     setAppliedCoupon(null);
     setCouponCode("");
     setPaymentReference("");
+    setPaymentAcknowledged(false);
   };
 
   return (
@@ -147,7 +155,9 @@ export default function CartPage() {
                 </Link>
                 <div>
                   <Link to={`/product/${item.id}`} className="font-bold hover:text-primary">{item.name}</Link>
-                  <p className="mt-1 text-sm text-success">In stock</p>
+                  <p className={`mt-1 text-sm ${item.stock_quantity == null || Number(item.stock_quantity || 0) > 0 ? "text-success" : "text-error"}`}>
+                    {item.stock_quantity == null ? "In stock" : Number(item.stock_quantity || 0) > 0 ? `${item.stock_quantity} available` : "Out of stock"}
+                  </p>
                   <button className="btn btn-ghost btn-xs mt-3" onClick={() => removeFromCart(item.id)}>Remove</button>
                 </div>
                 <div className="min-w-36">
@@ -206,24 +216,44 @@ export default function CartPage() {
                 </select>
                 <span className="mt-1 text-xs text-base-content/60">{selectedDelivery.eta}</span>
               </label>
-              <label className="form-control mb-4">
-                <span className="label-text mb-2">Payment method</span>
-                <select className="select select-bordered" value={paymentMethodId}
-                  onChange={(event) => {
-                    setPaymentMethodId(event.target.value);
-                    setPaymentReference("");
-                  }}>
+              <div className="mb-4">
+                <span className="label-text mb-2 block">Secure payment</span>
+                <div className="grid gap-2">
                   {PAYMENT_METHODS.map((method) => (
-                    <option key={method.id} value={method.id}>{method.label}</option>
+                    <label key={method.id} className={`cursor-pointer rounded-md border p-3 text-sm transition ${paymentMethodId === method.id ? "border-warning bg-warning/10" : "border-base-300 bg-base-100"}`}>
+                      <input
+                        className="radio radio-warning radio-sm mr-2 align-middle"
+                        type="radio"
+                        checked={paymentMethodId === method.id}
+                        onChange={() => {
+                          setPaymentMethodId(method.id);
+                          setPaymentReference("");
+                          setPaymentAcknowledged(false);
+                        }}
+                      />
+                      <span className="font-semibold">{method.label}</span>
+                      <span className="mt-1 block text-xs text-base-content/60">{method.secureNote}</span>
+                    </label>
                   ))}
-                </select>
-                <span className="mt-1 text-xs text-base-content/60">{selectedPayment.note}</span>
-              </label>
+                </div>
+                <div className="mt-3 rounded-md border border-success/30 bg-success/10 p-3 text-xs text-base-content/70">
+                  This checkout never asks for card numbers, PINs, OTPs, or wallet passwords. Admin only sees order details and payment references.
+                </div>
+              </div>
               {selectedPayment.requiresReference && (
                 <label className="form-control mb-4">
                   <span className="label-text mb-2">Payment reference / transaction ID</span>
                   <input className="input input-bordered uppercase" value={paymentReference}
-                    onChange={(event) => setPaymentReference(event.target.value)} placeholder="TRX123456789" />
+                    autoComplete="off"
+                    inputMode="text"
+                    onChange={(event) => setPaymentReference(event.target.value.replace(/\s/g, ""))}
+                    placeholder="TRX123456789" />
+                </label>
+              )}
+              {selectedPayment.type !== "offline" && (
+                <label className="label mb-4 cursor-pointer justify-start gap-3 rounded-md border border-base-300 p-3">
+                  <input className="checkbox checkbox-warning" type="checkbox" checked={paymentAcknowledged} onChange={(event) => setPaymentAcknowledged(event.target.checked)} />
+                  <span className="label-text">I completed payment through the official provider and did not enter sensitive payment data here.</span>
                 </label>
               )}
               <label className="form-control">

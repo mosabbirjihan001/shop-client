@@ -17,11 +17,11 @@ export default function Navbar() {
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-base-300 bg-base-100/95 backdrop-blur">
-      <div className="navbar mx-auto max-w-6xl px-4">
+    <header className="sticky top-0 z-40 bg-[#131921] text-white shadow">
+      <div className="navbar mx-auto max-w-7xl px-4">
         <div className="navbar-start">
-          <Link to="/" className="flex items-center gap-2 text-lg font-bold text-primary">
-            <span className="grid h-9 w-9 place-items-center rounded-md bg-primary text-primary-content">
+          <Link to="/" className="flex items-center gap-2 text-lg font-bold text-white">
+            <span className="grid h-9 w-9 place-items-center rounded-sm bg-[#ff9900] text-[#131921]">
               S
             </span>
             ShopApp
@@ -30,27 +30,27 @@ export default function Navbar() {
 
         <nav className="navbar-center hidden md:flex">
           <ul className="menu menu-horizontal gap-1 px-1">
-            <li><Link to="/">Shop</Link></li>
-            <li><a href="/#products">Deals</a></li>
-            <li><Link to="/cart">Cart</Link></li>
-            {isAdmin && <li><Link to="/admin">Admin</Link></li>}
+            <li><Link className="hover:bg-white/10" to="/">Shop</Link></li>
+            <li><a className="hover:bg-white/10" href="/#products">Deals</a></li>
+            <li><Link className="hover:bg-white/10" to="/cart">Cart</Link></li>
+            {isAdmin && <li><Link className="hover:bg-white/10" to="/admin">Admin</Link></li>}
           </ul>
         </nav>
 
         <div className="navbar-end gap-2">
-          <Link to="/cart" className="btn btn-ghost btn-sm">
+          <Link to="/cart" className="btn btn-ghost btn-sm text-white hover:bg-white/10">
             Cart
             {count > 0 && <span className="badge badge-warning badge-sm">{count}</span>}
           </Link>
           {!user ? (
             <>
-              <Link to="/login" className="btn btn-ghost btn-sm">Login</Link>
+              <Link to="/login" className="btn btn-ghost btn-sm text-white hover:bg-white/10">Login</Link>
               <Link to="/signup" className="btn btn-warning btn-sm">Sign up</Link>
             </>
           ) : (
             <div className="dropdown dropdown-end">
-              <button tabIndex={0} className="btn btn-ghost gap-2 px-2" type="button">
-                <span className="h-8 w-8 overflow-hidden rounded-full bg-secondary text-sm font-bold text-secondary-content">
+              <button tabIndex={0} className="btn btn-ghost gap-2 px-2 text-white hover:bg-white/10" type="button">
+                <span className="h-8 w-8 overflow-hidden rounded-full bg-[#ff9900] text-sm font-bold text-[#131921]">
                   {avatarUrl ? (
                     <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
                   ) : (

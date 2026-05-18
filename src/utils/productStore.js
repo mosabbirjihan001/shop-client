@@ -31,6 +31,9 @@ function normalizeProduct(product) {
   return {
     name: product.name?.trim() || "",
     price: Number(product.price || 0),
+    stock_quantity: product.stock_quantity == null
+      ? null
+      : Math.max(0, Math.floor(Number(product.stock_quantity || 0))),
     category: product.category?.trim() || null,
     image_url: product.image_url?.trim() || null,
     description: product.description?.trim() || null,
@@ -42,6 +45,9 @@ function prepareProductForDisplay(product) {
     ...product,
     name: product.name?.trim() || "Untitled product",
     price: Number(product.price || 0),
+    stock_quantity: product.stock_quantity == null
+      ? null
+      : Math.max(0, Math.floor(Number(product.stock_quantity || 0))),
     category: product.category?.trim() || "General",
     image_url: product.image_url?.trim() || null,
     description: product.description?.trim() || "",
@@ -129,7 +135,11 @@ export async function addProduct(supabase, product) {
       body: JSON.stringify(payload),
     });
     if (response.result) {
-      return { product: response.result, source: "api", error: null };
+      const savedProduct = prepareProductForDisplay({ ...payload, ...response.result });
+      const overrides = getProductOverrides();
+      overrides[String(savedProduct.id)] = { ...payload, id: savedProduct.id };
+      writeJson(PRODUCT_OVERRIDES_KEY, overrides);
+      return { product: savedProduct, source: response.source || "api", error: null };
     }
   } catch (error) {
     apiError = error;
@@ -180,9 +190,9 @@ export async function updateProduct(supabase, id, product) {
     });
     if (response.result) {
       const overrides = getProductOverrides();
-      delete overrides[String(id)];
+      overrides[String(id)] = { id, ...payload };
       writeJson(PRODUCT_OVERRIDES_KEY, overrides);
-      return { product: response.result, source: "api", error: null };
+      return { product: prepareProductForDisplay({ ...payload, ...response.result }), source: response.source || "api", error: null };
     }
   } catch (error) {
     apiError = error;

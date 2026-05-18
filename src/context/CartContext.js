@@ -22,20 +22,29 @@ export function CartProvider({ children }) {
 
   const addToCart = (product, quantity = 1) => {
     setItems((current) => {
+      const stock = product.stock_quantity == null ? null : Number(product.stock_quantity || 0);
+      const requested = Math.max(1, Number(quantity || 1));
       const existing = current.find((item) => item.id === product.id);
       if (existing) {
         return current.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.id === product.id
+            ? { ...item, quantity: stock != null ? Math.min(stock, item.quantity + requested) : item.quantity + requested }
+            : item
         );
       }
-      return [...current, { ...product, quantity }];
+      return [...current, { ...product, quantity: stock != null ? Math.min(stock, requested) : requested }];
     });
   };
 
   const updateQuantity = (id, quantity) => {
     setItems((current) =>
       current
-        .map((item) => item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item)
+        .map((item) => {
+          if (item.id !== id) return item;
+          const stock = item.stock_quantity == null ? null : Number(item.stock_quantity || 0);
+          const nextQuantity = Math.max(1, Number(quantity || 1));
+          return { ...item, quantity: stock != null ? Math.min(stock, nextQuantity) : nextQuantity };
+        })
         .filter((item) => item.quantity > 0)
     );
   };
